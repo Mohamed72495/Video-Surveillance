@@ -1,7 +1,7 @@
 import sys
 from PyQt5.uic import loadUi
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication , QDialog,QWidget
+from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtWidgets import QApplication, QDialog, QWidget, QMessageBox
 import face_recognition
 import os
 import numpy as np
@@ -231,6 +231,26 @@ class Camera(QDialog):
         else:
             self.displayImage(self.image,1)
 
+    
+    def displayImage(self,img,window=1):
+        qformat=QImage.Format_Indexed8
+        if len(img.shape)==3:
+            if img.shape[2]==4:
+                qformat=QImage.Format_RGBA8888
+            else:
+                qformat =QImage.Format_RGB888 
+        outImage= QImage(img,img.shape[1],img.shape[0],img.strides[0],qformat)   
+        outImage=outImage.rgbSwapped()
+
+        if window==1 :
+            self.imgLabel.setPixmap(QPixmap.fromImage(outImage))
+            self.imgLabel.setScaledContents(True)
+
+
+# ---------------------------------------------------------------------------------------------------------
+# --------------------------------------- Face Dedtection Functions ---------------------------------------
+# ---------------------------------------------------------------------------------------------------------
+
 
     def check_faceDetection (self, status):
         if self.ret == True:
@@ -250,6 +270,12 @@ class Camera(QDialog):
         # 
         return frame
     
+
+# ---------------------------------------------------------------------------------------------------------
+# --------------------------------------- Face Recognition Functions --------------------------------------
+# ---------------------------------------------------------------------------------------------------------
+
+
     def check_faceRecognition(self , status):
         if self.ret == True:
             if status:
@@ -286,6 +312,11 @@ class Camera(QDialog):
 
         return frame
 
+# ---------------------------------------------------------------------------------------------------------
+# --------------------------------------- License Plate Detection Functions -------------------------------
+# ---------------------------------------------------------------------------------------------------------
+
+
     def check_licenseDetection(self, status):
         if self.ret == True:
             if status:
@@ -303,6 +334,12 @@ class Camera(QDialog):
         # 
         return frame
     
+
+# ---------------------------------------------------------------------------------------------------------
+# --------------------------------------- Car Dedtection Functions ----------------------------------------
+# ---------------------------------------------------------------------------------------------------------
+
+
     def check_carDetection(self, status):
         if self.ret == True:
             if status:
@@ -320,19 +357,9 @@ class Camera(QDialog):
         # 
         return frame
 
-    def displayImage(self,img,window=1):
-        qformat=QImage.Format_Indexed8
-        if len(img.shape)==3:
-            if img.shape[2]==4:
-                qformat=QImage.Format_RGBA8888
-            else:
-                qformat =QImage.Format_RGB888 
-        outImage= QImage(img,img.shape[1],img.shape[0],img.strides[0],qformat)   
-        outImage=outImage.rgbSwapped()
 
-        if window==1 :
-            self.imgLabel.setPixmap(QPixmap.fromImage(outImage))
-            self.imgLabel.setScaledContents(True)
+
+    
 
     def stop_cam(self):
         if self.ret == True:
@@ -353,17 +380,31 @@ class Camera(QDialog):
             self.start_cam()
 
 
-    
 
     def gotoHome(self):
-        if self.ret == True:
-            self.stop_cam()
+        msg = QMessageBox()
+        msg.setWindowTitle("Exiting")
+        msg.setText("Back to Home page!")
+        msg.setIcon(QMessageBox.Question)
 
-        Welcome = WelcomeScreen()
-        widget.addWidget(Welcome)
-        widget.setCurrentIndex(widget.currentIndex() + 1)
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No )
+        choice = msg.exec_()
+
+        if choice == QMessageBox.Yes:
+            if self.ret == True:
+                self.stop_cam()
+
+            Welcome = WelcomeScreen()
+            widget.addWidget(Welcome)
+            widget.setCurrentIndex(widget.currentIndex() + 1)
+        else:
+            pass
+
+        
 
 
+
+   
 
 
 

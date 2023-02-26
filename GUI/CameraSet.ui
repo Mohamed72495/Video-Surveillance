@@ -28,67 +28,6 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item alignment="Qt::AlignHCenter">
-    <widget class="QLabel" name="label">
-     <property name="minimumSize">
-      <size>
-       <width>500</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>500</width>
-       <height>50</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <family>MS Shell Dlg 2</family>
-       <pointsize>20</pointsize>
-       <weight>75</weight>
-       <italic>false</italic>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="cursor">
-      <cursorShape>ArrowCursor</cursorShape>
-     </property>
-     <property name="mouseTracking">
-      <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: rgab(0,0,0,0);</string>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <property name="lineWidth">
-      <number>2</number>
-     </property>
-     <property name="text">
-      <string>Intelligent video Surveillance</string>
-     </property>
-     <property name="scaledContents">
-      <bool>false</bool>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="wordWrap">
-      <bool>false</bool>
-     </property>
-     <property name="margin">
-      <number>0</number>
-     </property>
-     <property name="indent">
-      <number>-1</number>
-     </property>
-    </widget>
-   </item>
-   <item alignment="Qt::AlignHCenter">
     <widget class="QCheckBox" name="checkBox">
      <property name="minimumSize">
       <size>
@@ -383,7 +322,8 @@ color: rgb(0, 0, 0);</string>
          <property name="styleSheet">
           <string notr="true">font: 75 12pt &quot;Nirmala UI&quot;;
 color: rgb(255, 255, 255);
-background-color: rgb(0, 0, 0);</string>
+background-color: rgb(0, 0, 0);
+</string>
          </property>
          <property name="text">
           <string>Start Webcam</string>
@@ -499,7 +439,7 @@ background-color: rgb(0, 0, 0);</string>
          </property>
          <property name="styleSheet">
           <string notr="true">font: 75 12pt &quot;Nirmala UI&quot;;
-color: rgba(255, 255, 255,1);
+color: rgb(255, 255, 255);
 background-color: rgb(0, 0, 0);</string>
          </property>
          <property name="text">
