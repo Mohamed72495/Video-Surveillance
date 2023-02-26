@@ -10,6 +10,35 @@ from PyQt5.QtCore import QTimer
 import cv2
 from PyQt5.QtGui import QImage ,QPixmap
 
+import paddle
+
+import torch
+import time
+import re
+import easyocr
+import matplotlib.pyplot as plt
+from pathlib import Path
+from PIL import ImageFont, ImageDraw, Image
+import arabic_reshaper 
+from bidi.algorithm import get_display
+import matplotlib.gridspec as gridspec
+from paddleocr import PaddleOCR
+
+
+
+
+OCR_TH = 0.5
+ocr = PaddleOCR(lang="arabic", use_angle_cls=True)
+license_model =  torch.hub.load('ultralytics/yolov5', 'custom', path= 'E:\Studying\ASU\Senior-2\Graduation Project\GUI\License Detection/best.pt',force_reload=True) 
+license_classes = license_model.names 
+plates = []
+
+
+faceDetection_model =  torch.hub.load('ultralytics/yolov5', 'custom', path= 'E:\Studying\ASU\Senior-2\Graduation Project\GUI\Face Detection/best.pt',force_reload=True) 
+
+faceDetection_classes = faceDetection_model.names 
+
+
 # path = 'sample images for recognition'
 # images = []
 # classNames = []
@@ -148,6 +177,7 @@ class Camera(QDialog):
         self.detectButton.setCheckable(True)
         self.detectButton.toggled.connect(self.check_faceDetection)
         self.faceDetection_Enabled = False
+        
 
         self.recognitionButton.setCheckable(True)
         self.recognitionButton.toggled.connect(self.check_faceRecognition)
@@ -225,8 +255,21 @@ class Camera(QDialog):
     def update_frame(self):
         self.ret,self.image=self.capture.read()
         # self.image=cv2.flip(self.image,1)
-        if self.faceRecognition_Enabled:
-            detected_image = self.recognize_face(self.image)
+
+        if self.faceDetection_Enabled:
+            detected_image = self.detect_face(self.image)
+            self.displayImage(detected_image,1)
+        else:
+            self.displayImage(self.image,1)
+
+        # if self.faceRecognition_Enabled:
+        #     detected_image = self.recognize_face(self.image)
+        #     self.displayImage(detected_image,1)
+        # else:
+        #     self.displayImage(self.image,1)
+
+        if self.licenseDetection_Enabled:
+            detected_image = self.detect_license(self.image)
             self.displayImage(detected_image,1)
         else:
             self.displayImage(self.image,1)
@@ -268,6 +311,22 @@ class Camera(QDialog):
         #   Face Detection algorithm
         # 
         # 
+        results = faceDetection_model(frame)
+        labels, cordinates = results.xyxyn[0][:, -1], results.xyxyn[0][:, :-1]
+        
+        #2. Plot boxes
+        n = len(labels)
+        x_shape, y_shape = frame.shape[1], frame.shape[0]
+        
+        for i in range(n):
+            row = cordinates[i]
+            if row[4] >= 0.5: 
+
+                x1, y1, x2, y2 = int(row[0]*x_shape), int(row[1]*y_shape), int(row[2]*x_shape), int(row[3]*y_shape) ## BBOx coordniates
+                text_d = faceDetection_classes[int(labels[i])]
+
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 1) ## BBox
+                cv2.putText(frame, text_d, (x1 , y1 - 2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1 , cv2.LINE_AA)
         return frame
     
 
@@ -326,12 +385,75 @@ class Camera(QDialog):
                 self.licenseButton.setText("License Detection")
                 self.licenseDetection_Enabled = False
 
+    
+
     def detect_license(self, frame):
         # 
         # 
         # License Detection algorithm
         # 
         # 
+
+
+        results = license_model(frame)
+        labels, cord = results.xyxyn[0][:, -1], results.xyxyn[0][:, :-1]
+
+        n = len(labels)
+        x_shape, y_shape = frame.shape[1], frame.shape[0]
+
+        
+
+        for i in range(n):
+            row = cord[i]
+            if row[4] >= 0.5: 
+                x1, y1, x2, y2 = int(row[0]*x_shape), int(row[1]*y_shape), int(row[2]*x_shape), int(row[3]*y_shape) ## BBOx coordniates
+                text_d = license_classes[int(labels[i])]
+
+                coords = [x1,y1,x2,y2]
+
+                xmin, ymin, xmax, ymax = coords
+        
+                nplate = frame[int(ymin)+10:int(ymax), int(xmin)-10:int(xmax)+10]
+                
+            
+                kernel = np.ones((1, 1), np.uint8)
+                dilated = cv2.dilate(nplate, kernel, iterations=1)
+                eroded = cv2.erode(dilated, kernel, iterations=1)
+                ocr_result = ocr.ocr(nplate, det=False, cls=True)
+                
+
+                rectangle_size = nplate.shape[0]*nplate.shape[1]
+        
+                plate = [] 
+                print(ocr_result)
+                for result in ocr_result:
+            
+                    if result[0][1] >= OCR_TH and result[0][0] != "مصر":
+                        plate.append(result[0][0].replace(":",""))
+                plate = plate[::-1]
+                plate = [" ".join(plate)]
+                print(plate)
+                plates.append(plate)
+
+                text = plate
+
+
+                if len(text) ==1:
+                    text = text[0].upper()
+
+                plate_num = text
+
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2) ## BBox
+                cv2.rectangle(frame, (x1-30, y1-30), (x2+50, y1), (0, 255,0), -1) ## for text label background
+                reshaped_text = arabic_reshaper.reshape(plate_num)
+                bidi_text = get_display(reshaped_text)
+                fontpath = "E:\Studying\ASU\Senior-2\Graduation Project\GUI\License Detection/arial.ttf"
+                font = ImageFont.truetype(fontpath, 24)
+                img_pil = Image.fromarray(frame)
+                draw = ImageDraw.Draw(img_pil)
+                draw.text((x1, y1-30),bidi_text, font = font, fill="black")
+                frame = np.array(img_pil)
+
         return frame
     
 
