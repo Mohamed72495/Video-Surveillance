@@ -137,6 +137,7 @@ class WelcomeScreen(QDialog):
 # ---------------------------------------------------------------------------------------------------------
 
 
+
 class CreateAccScreen(QDialog):
     def __init__(self):
         super(CreateAccScreen, self).__init__()
@@ -527,7 +528,7 @@ class Camera(QDialog):
                 
                 cv2.rectangle(frame, (x1,y1), (x2,y2), (0,255,0), 2)
                 cv2.rectangle(frame, (x1,y2-35), (x2,y2), (0,255,0), cv2.FILLED)
-                cv2.putText(frame, name, (x1+6,y2-6), cv2.FONT_HERSHEY_COMPLEX, 0.7 ,(255,255,255), 1)
+                cv2.putText(frame, name, (x1+6,y2-6), cv2.FONT_HERSHEY_COMPLEX, 0.7 ,(0,0,0), 1)
 
         # frameS = cv2.resize(frame, (0,0), None, 0.25, 0.25)
         # frameS = cv2.cvtColor(frameS, cv2.COLOR_BGR2RGB)
