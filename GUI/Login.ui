@@ -18,7 +18,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
+    <item alignment="Qt::AlignHCenter">
      <widget class="QLabel" name="label">
       <property name="minimumSize">
        <size>
@@ -26,19 +26,25 @@
         <height>0</height>
        </size>
       </property>
+      <property name="maximumSize">
+       <size>
+        <width>500</width>
+        <height>70</height>
+       </size>
+      </property>
       <property name="styleSheet">
        <string notr="true">font: 36pt &quot;MS Shell Dlg 2&quot;;color:rgb(255, 255, 255);
 background-color: rgba(255, 255, 255,0);</string>
       </property>
       <property name="text">
-       <string>Sign up</string>
+       <string>Login</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </item>
-    <item>
+    <item alignment="Qt::AlignHCenter">
      <widget class="QLabel" name="label_2">
       <property name="minimumSize">
        <size>
@@ -46,12 +52,18 @@ background-color: rgba(255, 255, 255,0);</string>
         <height>0</height>
        </size>
       </property>
+      <property name="maximumSize">
+       <size>
+        <width>500</width>
+        <height>50</height>
+       </size>
+      </property>
       <property name="styleSheet">
        <string notr="true">font: 16pt &quot;MS Shell Dlg 2&quot;;color:rgb(255, 255, 255);
 background-color: rgba(255, 255, 255,0);</string>
       </property>
       <property name="text">
-       <string>Register a brand new account</string>
+       <string>Sign in to your existing account</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -101,9 +113,6 @@ color:white;</string>
 font: 75 13pt &quot;MS Shell Dlg 2&quot;;
 color:white;</string>
       </property>
-      <property name="text">
-       <string/>
-      </property>
      </widget>
     </item>
     <item alignment="Qt::AlignHCenter">
@@ -147,52 +156,8 @@ color:white;</string>
       <property name="styleSheet">
        <string notr="true">background-color: rgba(255, 255, 255,0);
 font: 75 13pt &quot;MS Shell Dlg 2&quot;;
-color:white;</string>
-      </property>
-     </widget>
-    </item>
-    <item alignment="Qt::AlignHCenter">
-     <widget class="QLabel" name="label_5">
-      <property name="minimumSize">
-       <size>
-        <width>500</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>500</width>
-        <height>50</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgba(255, 255, 255,0);
-font: 75 16pt &quot;MS Shell Dlg 2&quot;;
-color:white;</string>
-      </property>
-      <property name="text">
-       <string>Confirm Password</string>
-      </property>
-     </widget>
-    </item>
-    <item alignment="Qt::AlignHCenter">
-     <widget class="QLineEdit" name="confirmpasswordfield">
-      <property name="minimumSize">
-       <size>
-        <width>500</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>500</width>
-        <height>50</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgba(255, 255, 255,0);
-font: 75 13pt &quot;MS Shell Dlg 2&quot;;
-color:white;</string>
+color:white;
+</string>
       </property>
      </widget>
     </item>
@@ -224,7 +189,7 @@ background-color: rgba(255, 255, 255,0);</string>
      </widget>
     </item>
     <item alignment="Qt::AlignHCenter">
-     <widget class="QPushButton" name="signup">
+     <widget class="QPushButton" name="login">
       <property name="minimumSize">
        <size>
         <width>500</width>
@@ -255,7 +220,7 @@ QPushButton:pressed {
 }</string>
       </property>
       <property name="text">
-       <string>Sign up</string>
+       <string>Log in</string>
       </property>
      </widget>
     </item>
@@ -269,7 +234,7 @@ QPushButton:pressed {
       </property>
       <property name="maximumSize">
        <size>
-        <width>500</width>
+        <width>300</width>
         <height>50</height>
        </size>
       </property>

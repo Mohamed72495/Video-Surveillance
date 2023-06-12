@@ -1,7 +1,11 @@
 import sys
+import re
+import os
+import shutil
+import openpyxl
 from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QDialog, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMessageBox, QMainWindow, QTableWidgetItem, QFileDialog
 import face_recognition
 from tracking_and_recognition import Tracker
 import pandas as pd
@@ -77,24 +81,9 @@ faceDetection_classes = faceDetection_model.names
 # ---------------------------------------------------------------------------------------------------------
 # --------------------------------------- Read Knownfaces Encodings ---------------------------------------
 # ---------------------------------------------------------------------------------------------------------
+    
 
-try:
-    df = pd.read_excel("./sample images for recognition/weights/names.xlsx" , header=None)
-except:
-    messagebox.showerror("Error", """Cannot Read names of your sample known faces.
-Ensure that you have the names.xlsx file in
-'/sample images for recognition/weights' location.""")
-    sys.exit()
-classNames = df.values.flatten()
-
-try:
-    encodingListKnown = pd.read_excel("./sample images for recognition/weights/weights.xlsx" , header=None)
-except:
-    messagebox.showerror("Error", """Cannot Read weights of your sample known faces.
-Ensure that you have the weights.xlsx file in
-'/sample images for recognition/weights' location""")
-    sys.exit()
-encodingListKnown = [np.array(row) for _, row in encodingListKnown.iterrows()]
+    
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -109,7 +98,7 @@ encodingListKnown = [np.array(row) for _, row in encodingListKnown.iterrows()]
 # ---------------------------------------------------------------------------------------------------------
 
 
-class WelcomeScreen(QDialog):
+class WelcomeScreen(QMainWindow):
     def __init__(self):
         super(WelcomeScreen,self).__init__()
         try:
@@ -138,7 +127,7 @@ class WelcomeScreen(QDialog):
 
 
 
-class CreateAccScreen(QDialog):
+class CreateAccScreen(QMainWindow):
     def __init__(self):
         super(CreateAccScreen, self).__init__()
         try:
@@ -194,11 +183,11 @@ class CreateAccScreen(QDialog):
 # ---------------------------------------------------------------------------------------------------------
  
 
-class LoginScreen(QDialog):
+class LoginScreen(QMainWindow):
     def __init__(self):
         super(LoginScreen, self).__init__()
         try:
-            loadUi("login.ui",self)
+            loadUi("Login.ui",self)
         except:
             messagebox.showerror("Error", "Some UI files not found")
             sys.exit()
@@ -236,26 +225,45 @@ class LoginScreen(QDialog):
             else:
                 self.error.setText("Invalid username or password")
     def gotocamera(self):
-        camera = Camera()
+        camera = CameraSet()
         widget.addWidget(camera)
         widget.setCurrentIndex(widget.currentIndex()+1)
 
 
 
 # ---------------------------------------------------------------------------------------------------------
-# --------------------------------------- Camera Screen ---------------------------------------
+# --------------------------------------- CameraSet Screen ---------------------------------------
 # ---------------------------------------------------------------------------------------------------------
 
-
-class Camera(QDialog):
+class CameraSet(QMainWindow):
     def __init__(self):
-        super(Camera,self).__init__()
+        super(CameraSet,self).__init__()
         try:
             loadUi('CameraSet.ui',self)
         except:
             messagebox.showerror("Error", "Some UI files not found")
             sys.exit()
         self.image=None
+
+        # self.names_encodings = namesAndEncoding()
+        # global classNames
+        # global encodingListKnown
+        try:
+            df = pd.read_excel("./sample images for recognition/weights/names.xlsx" , header=None)
+        except:
+            messagebox.showerror("Error", """Cannot Read names of your sample known faces.
+        Ensure that you have the names.xlsx file in
+        '/sample images for recognition/weights' location.""")
+            sys.exit()
+        self.classNames = df.values.flatten()
+        try:
+            self.encodingListKnown = pd.read_excel("./sample images for recognition/weights/weights.xlsx" , header=None)
+        except:
+            messagebox.showerror("Error", """Cannot Read weights of your sample known faces.
+        Ensure that you have the weights.xlsx file in
+        '/sample images for recognition/weights' location""")
+            sys.exit()
+        self.encodingListKnown = [np.array(row) for _, row in self.encodingListKnown.iterrows()]
 
         self.startButton.clicked.connect(self.start_cam)
         self.stopButton.clicked.connect(self.stop_cam)
@@ -264,6 +272,7 @@ class Camera(QDialog):
         self.pauseButton.clicked.connect(self.check_pause)
 
         self.Home.clicked.connect(self.gotoHome)
+        self.Settings.clicked.connect(self.goToSettings)
 
         self.detectButton.setCheckable(True)
         self.detectButton.toggled.connect(self.check_faceDetection)
@@ -483,7 +492,7 @@ class Camera(QDialog):
         #         cv2.putText(frame, dict[str(res)], (x1 , y1 - 2), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2 , cv2.LINE_AA)
 
 
-
+        
         frameS = cv2.resize(frame, (0,0), None, 0.25, 0.25)
         frameS = cv2.cvtColor(frameS, cv2.COLOR_BGR2RGB)
         results = faceDetection_model(frameS)
@@ -515,14 +524,14 @@ class Camera(QDialog):
             if row_for_weight[4] >= 0.5:
                 y1,x2,y2,x1 = int(faceLocation[0]), int(faceLocation[1]), int(faceLocation[2]), int(faceLocation[3]) ## BBOx coordniates
 
-                faceDis = face_recognition.face_distance(encodingListKnown, faceEncoding)
+                faceDis = face_recognition.face_distance(self.encodingListKnown, faceEncoding)
                 
                 matchIndex = np.argmin(faceDis)
                 
                 if faceDis[matchIndex] > 0.6:
                     name = 'unknown'
                 else:
-                    name = classNames[matchIndex].upper()
+                    name = self.classNames[matchIndex].upper()
 
                 y1,x2,y2,x1 = y1*4,x2*4,y2*4,x1*4
                 
@@ -724,6 +733,24 @@ class Camera(QDialog):
             self.start_cam()
 
 
+    def goToSettings(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Exiting")
+        msg.setText("Go to Settings page!")
+        msg.setIcon(QMessageBox.Question)
+
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No )
+        choice = msg.exec_()
+
+        if choice == QMessageBox.Yes:
+            if self.ret == True:
+                self.stop_cam()
+
+            settings = SettingsWindow()
+            widget.addWidget(settings)
+            widget.setCurrentIndex(widget.currentIndex() + 1)
+        else:
+            pass
 
     def gotoHome(self):
         msg = QMessageBox()
@@ -744,6 +771,134 @@ class Camera(QDialog):
         else:
             pass
 
+
+    
+# ---------------------------------------------------------------------------------------------------------
+# --------------------------------------- Settings Screen ---------------------------------------
+# ---------------------------------------------------------------------------------------------------------
+ 
+images_path = './sample images for recognition/images'
+
+class SettingsWindow(QMainWindow):
+
+    def __init__(self):
+        super(SettingsWindow,self).__init__()
+        try:
+            loadUi('Settings.ui',self)
+        except:
+            messagebox.showerror("Error", "Some UI files not found")
+            sys.exit()
+
+        # self.names_encodings = namesAndEncoding()
+        self.images = []
+        self.classNames = []
+        self.ReloadNames.clicked.connect(self.getNames)
+        self.CameraSet.clicked.connect(self.goToCameraSet)
+        self.actionOpenPhoto.triggered.connect(self.openPhoto)
+
+
+    def findEncodings(self):
+
+        self.images.clear()
+        self.classNames.clear()
+        myList = os.listdir(images_path)
+        pattern = re.compile(r'(\D+)')  
+        
+
+        for cl in myList:
+            curImg = cv2.imread(f'{images_path}/{cl}')
+            self.images.append(curImg)
+            self.classNames.append(pattern.findall(os.path.splitext(cl)[0]))
+        
+        names_df = pd.DataFrame(self.classNames)
+        names_df.to_excel("./sample images for recognition/weights/names.xlsx", index=False, header=False)
+        encodingList = []
+        for img in self.images:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            
+            face_encodings = face_recognition.face_encodings(img)
+            if len(face_encodings) > 0:
+                encode = face_encodings[0]
+                encodingList.append(encode)
+            else:
+                encodingList.append([0])
+        return encodingList 
+
+
+    def getNames(self):
+        # global classNames
+        # global encodingListKnown
+
+        encodingListKnown = self.findEncodings()
+
+        weights_df = pd.DataFrame(encodingListKnown)
+        weights_df.to_excel("./sample images for recognition/weights/weights.xlsx", index=False, header=False)
+        # Load data from Excel file
+        try:
+            wb = openpyxl.load_workbook("./sample images for recognition/weights/names.xlsx")
+        except:
+            messagebox.showerror("Error", """Cannot Read names of your sample known faces.
+        Ensure that you have the names.xlsx file in
+        '/sample images for recognition/weights' location.""")
+            sys.exit()
+        
+        ws = wb.active
+        data = ws.values
+        data_list = list(data)
+
+        self.NamesTable.setRowCount(len(data_list))
+
+        row = 0
+        for row_data in data_list:
+            col = 0
+            for cell_data in row_data:
+                item = QTableWidgetItem(str(cell_data))
+                self.NamesTable.setItem(row, col, item)
+                col += 1
+            row += 1
+        self.Count.setText("People: " + str(row))
+        
+
+
+    def openPhoto(self):
+
+        # Show the file dialog to let the user choose an image file
+        file_dialog = QFileDialog()
+        file_dialog.setNameFilter("Image files (*.jpg *.jpeg *.png)")
+        file_dialog.setViewMode(QFileDialog.Detail)
+
+        if file_dialog.exec_() == QFileDialog.Accepted:
+            # Get the path of the selected image file
+            selected_image_path = file_dialog.selectedFiles()[0]
+            # Specify the destination folder where the image file will be copied
+            destination_folder = images_path
+
+            # Create the destination folder if it doesn't exist
+            if not os.path.exists(destination_folder):
+                os.makedirs(destination_folder)
+
+            # Copy the selected image file to the destination folder
+            shutil.copy(selected_image_path, destination_folder)
+        else:
+            # If the user canceled the file dialog, exit the program
+            file_dialog.close()
+
+    def goToCameraSet(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Exiting")
+        msg.setText("Go to CameraSet page!")
+        msg.setIcon(QMessageBox.Question)
+
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No )
+        choice = msg.exec_()
+
+        if choice == QMessageBox.Yes:
+            Camera = CameraSet()
+            widget.addWidget(Camera)
+            widget.setCurrentIndex(widget.currentIndex() + 1)
+        else:
+            pass
+
         
 
 
@@ -755,7 +910,7 @@ class Camera(QDialog):
 #main
 app=QApplication(sys.argv)
 # Welcome=WelcomeScreen()
-Welcome = Camera()
+Welcome = WelcomeScreen()
 widget = QtWidgets.QStackedWidget()
 widget.addWidget(Welcome)
 widget.setMinimumHeight(600)
